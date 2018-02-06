@@ -1,0 +1,13 @@
+#intellij ide
+*.iml
+**/.idea/**
+
+#maven
+target/
+
+#application
+temp/
+*.log
+
+#mac osx
+.DS_Store
