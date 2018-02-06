@@ -1,0 +1,82 @@
+<?xml version="1.0"?>
+<project name="file-assistant" default="list" basedir=".">
+    <property file="build.properties"/>
+    <property name="fa.core.jar" value="target/core-1.0-SNAPSHOT-jar-with-dependencies.jar"/>
+
+    <target name="init">
+        <defaultexcludes remove="**/.svn/**"/>
+        <tstamp>
+            <format property="fa.tstamp" pattern="yyyy-MM-dd-HHmmss" locale="en,GB"/>
+        </tstamp>
+        <tempfile property="fa.log.file" destdir="${basedir}" prefix="fa_" suffix="_${fa.tstamp}.log"/>
+        <fileset id="fa.fileset" dir="${fa.path.to.browse}" >
+            <include name="${fa.pattern.to.include}"/>
+            <exclude name="${fa.pattern.to.exclude}"/>
+        </fileset>
+    </target>
+    <target name="list" depends="init">
+        <property name="list.fileset.prop" refid="fa.fileset"/>
+        <property name="list.result.file" value="fa_list_${fa.tstamp}.txt"/>
+        <echo message="${list.fileset.prop}" file="${list.result.file}"/>
+        <!--replace file="${list.result.file}" token=";" value="\n"/-->
+    </target>
+    <target name="list-duplicated-files" depends="init">
+            <java jar="${fa.core.jar}" fork="true">
+                <arg value="-df"/>
+                <arg value="${fa.path.to.browse}"/>
+                <arg value="*.{doc,docx,xls,xlsx,pdf,ppt,pptx,jpg}"/>
+            </java>
+    </target>
+    <target name="delete" depends="init">
+        <delete includeemptydirs="true">
+            <fileset refid="fa.fileset"/>
+        </delete>
+    </target>
+    <target name="zip-src" depends="init">
+        <!--copy preservelastmodified="true" todir="${basedir}/temp">
+            <fileset dir="${fa.zipsrc.dir}">
+                <exclude name="**/.svn/"/>
+                <exclude name="**/.git/"/>
+                <exclude name="**/target/"/>
+                <exclude name="**/.idea/"/>
+                <exclude name="**/.metadata/"/>
+                <exclude name="**/.classpath"/>
+                <exclude name="**/.project"/>
+                <exclude name="**/.settings/"/>
+                <exclude name="**/.DS_Store"/>
+                <exclude name="**/*.class"/>
+                <exclude name="**/*.log"/>
+            </fileset>
+        </copy-->
+        <basename property="zip.file" file="${fa.zipsrc.dir}"/>
+        <zip destfile="${basedir}/temp/${zip.file}.zip">
+            <fileset dir="${fa.zipsrc.dir}">
+                <exclude name="**/.svn/"/>
+                <exclude name="**/.git/"/>
+                <exclude name="**/.gitattributes"/>
+                <exclude name="**/.gitignore"/>
+                <exclude name="**/.idea/"/>
+                <exclude name="**/*.iml"/>
+                <exclude name="**/.metadata/"/>
+                <exclude name="**/.classpath"/>
+                <exclude name="**/.project"/>
+                <exclude name="**/.settings/"/>
+                <exclude name="**/target/"/>
+                <exclude name="**/*.class"/>
+                <exclude name="**/*.log"/>
+                <exclude name="**/.DS_Store"/>
+            </fileset>
+        </zip>
+    </target>
+    <!-- Pre-defined tasks -->
+    <target name="clean-mac" depends="init">
+        <echo message="Deleting svn directories ..." />
+        <delete includeemptydirs="true">
+            <fileset dir="/Users/davidmurillomatallana/Documents" >
+                <include name="**/.svn/"/>
+                <exclude name="**/workspaces/"/>
+            </fileset>
+        </delete>
+    </target>
+
+</project>
