@@ -1,22 +1,34 @@
 <?xml version="1.0"?>
 <project name="file-assistant" default="list" basedir=".">
+
+    <!-- http://ant-contrib.sourceforge.net/ -->
+    <taskdef resource="net/sf/antcontrib/antcontrib.properties"/>
+
     <property file="build.properties"/>
     <property name="fa.core.jar" value="target/core-1.0-SNAPSHOT-jar-with-dependencies.jar"/>
+    <property name="fa.zipsrc.backup.dir" value="zip-sources" />
+    <property name="fa.git.backup.dir" value="git-backup" />
+    <property name="fa.git.bundle.ext" value="gitbundle" />
 
     <target name="init">
         <defaultexcludes remove="**/.svn/**"/>
         <tstamp>
-            <format property="fa.tstamp" pattern="yyyy-MM-dd-HHmmss" locale="en,GB"/>
+            <format property="fa.timestamp" pattern="yyyy-MM-dd-HHmmss" locale="en,GB"/>
         </tstamp>
-        <tempfile property="fa.log.file" destdir="${basedir}" prefix="fa_" suffix="_${fa.tstamp}.log"/>
+        <tempfile property="fa.log.file" destdir="${fa.working.dir}" prefix="fa_" suffix="_${fa.timestamp}.log"/>
         <fileset id="fa.fileset" dir="${fa.path.to.browse}" >
             <include name="${fa.pattern.to.include}"/>
             <exclude name="${fa.pattern.to.exclude}"/>
         </fileset>
     </target>
+    <target name="clean" description="Clean working directory">
+        <delete includeemptydirs="true">
+            <fileset dir="${fa.working.dir}" includes="**/*" />
+        </delete>
+    </target>
     <target name="list" depends="init">
         <property name="list.fileset.prop" refid="fa.fileset"/>
-        <property name="list.result.file" value="fa_list_${fa.tstamp}.txt"/>
+        <property name="list.result.file" value="fa_list_${fa.timestamp}.txt"/>
         <echo message="${list.fileset.prop}" file="${list.result.file}"/>
         <!--replace file="${list.result.file}" token=";" value="\n"/-->
     </target>
@@ -32,6 +44,18 @@
             <fileset refid="fa.fileset"/>
         </delete>
     </target>
+
+    <target name="zip-src-subdirs" description="Given a parent file, generates zip file for each subdir"
+            depends="init">
+        <foreach target="zip-src" param="fa.zipsrc.dir" inheritall="false">
+            <path>
+                <dirset dir="${fa.zipsrc.parent.dir}">
+                    <include name="*" />
+                </dirset>
+            </path>
+        </foreach>
+    </target>
+
     <target name="zip-src" depends="init">
         <!--copy preservelastmodified="true" todir="${basedir}/temp">
             <fileset dir="${fa.zipsrc.dir}">
@@ -49,7 +73,7 @@
             </fileset>
         </copy-->
         <basename property="zip.file" file="${fa.zipsrc.dir}"/>
-        <zip destfile="${basedir}/temp/${zip.file}.zip">
+        <zip destfile="${fa.working.dir}/${fa.zipsrc.backup.dir}/${zip.file}.zip">
             <fileset dir="${fa.zipsrc.dir}">
                 <exclude name="**/.svn/"/>
                 <exclude name="**/.git/"/>
@@ -68,6 +92,61 @@
             </fileset>
         </zip>
     </target>
+
+    <target name="git-zip-subdirs" depends="init">
+        <foreach target="git-zip" param="fa.git.dir" inheritall="false">
+            <path>
+                <dirset dir="${fa.git.parent.dir}">
+                    <include name="*" />
+                </dirset>
+            </path>
+        </foreach>
+    </target>
+
+    <!-- Generates a ZIP of a git repository excluding files/dirs in .gitignore
+         Includes the current status of master branch
+         Requires git installed
+     -->
+    <target name="git-zip" depends="init">
+        <property name="output.dir" value="${fa.working.dir}/${fa.git.backup.dir}" />
+        <mkdir dir="${output.dir}" />
+        <basename property="zip.file" file="${fa.git.dir}"/>
+        <exec executable="git" dir="${fa.git.dir}">
+            <arg value="archive" />
+            <arg value="--format" />
+            <arg value="zip" />
+            <arg value="--output" />
+            <arg value="${output.dir}/${zip.file}.zip" />
+            <arg value="master" />
+        </exec>
+    </target>
+
+    <!-- Generates a bundle of a git repository excluding files/dirs in .gitignore
+     Includes commit history and branches
+     Requires git installed
+     -->
+    <target name="git-bundle" depends="init">
+        <property name="output.dir" value="${fa.working.dir}/${fa.git.backup.dir}" />
+        <mkdir dir="${output.dir}" />
+        <basename property="zip.file" file="${fa.git.dir}"/>
+        <exec executable="git" dir="${fa.git.dir}">
+            <arg value="bundle" />
+            <arg value="create" />
+            <arg value="${output.dir}/${zip.file}.${fa.git.bundle.ext}" />
+            <arg value="--all" />
+        </exec>
+    </target>
+
+    <!-- Create a git repository with a git bundle -->
+    <target name="git-bundle-extract" depends="init">
+        <basename property="repo.name" file="${fa.git.bundle.extract.file}" suffix=".${fa.git.bundle.ext}"/>
+        <exec executable="git" dir="${fa.git.bundle.extract.dir}">
+            <arg value="clone" />
+            <arg value="${fa.git.bundle.extract.file}" />
+            <arg value="${repo.name}" />
+        </exec>
+    </target>
+
     <!-- Pre-defined tasks -->
     <target name="clean-mac" depends="init">
         <echo message="Deleting svn directories ..." />
