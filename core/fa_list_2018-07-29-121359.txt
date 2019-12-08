@@ -1,0 +1,1 @@
+Material Software/ArtificialIntelligence/AI_Examples/Chapter6_Scripting_Source/Common/luaj-2.0.2/.classpath;android/Curso Android/DevelopmentEnvironment/Misc/SimpleCalc/SimpleCalc/.classpath;android/Curso Android/DevelopmentEnvironment/Misc/SimpleCalc/SimpleCalcTest/.classpath;android/Curso Android/TheActivityClass/SourceFiles/TestCases/.classpath

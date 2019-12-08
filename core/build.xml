@@ -20,11 +20,10 @@
             <include name="${fa.pattern.to.include}"/>
             <exclude name="${fa.pattern.to.exclude}"/>
         </fileset>
+        <mkdir dir="${fa.working.dir}" />
     </target>
     <target name="clean" description="Clean working directory">
-        <delete includeemptydirs="true">
-            <fileset dir="${fa.working.dir}" includes="**/*" />
-        </delete>
+        <delete dir="${fa.working.dir}" />
     </target>
     <target name="list" depends="init">
         <property name="list.fileset.prop" refid="fa.fileset"/>
