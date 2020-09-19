@@ -1,13 +1,12 @@
 package org.fa.core;
 
-import static java.nio.file.FileVisitResult.*;
-
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+
+import static java.nio.file.FileVisitResult.CONTINUE;
 
 /**
  * Created by davidmurillomatallana on 01/02/2018.
@@ -23,7 +22,7 @@ public class WildcardFinder extends SimpleFileVisitor<Path> {
     }
 
     private void find(Path path) {
-        if (pathMatcher.matches(path.getFileName())) {
+        if (pathMatcher.matches(path)) {
             results.add(path);
         }
     }
